@@ -3,15 +3,20 @@ import "../css/style.css";
 import { FaRegEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { FaAngleDown } from "react-icons/fa";
+import Modal from "./Modal";
+// import Modal from './Modal'
 
 function Home() {
   // data
   const [data, setData] = useState([]);
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [openState,setOpenState] = useState([])
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchData();
-  }, []);
+    
+  }, [data]);
   // URL
   const serverUrl = "http://localhost:5000/task/all";
 
@@ -27,6 +32,8 @@ function Home() {
       .then((data) => {
         // console.log(data[0])
         setData(data); // Set data if successful
+        // Initialize openStates with the same length as fetched data
+        setOpenState(data.map(()=>false));
       })
       .catch((err) => {
         // Catch any errors
@@ -34,16 +41,88 @@ function Home() {
       });
   };
 
-  // Toggle the collapsed state on button click
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+
+
+// toggle the element of the lists
+  const toggleItem = (index)=>{
+    setOpenState((prevStates)=>
+      // if the state is false then make it true and vice versa
+        prevStates.map((isOpen,i)=>(i === index ? !isOpen : isOpen))
+    )
+    // console.log(openState)
+  }
+
+  const openModal = (task) =>{
+    setSelectedTask(task);
+    setIsModalOpen(true);
+  }
+
+  const closeModal = () =>{
+    setSelectedTask(null);
+    setIsModalOpen(false);
+  }
+
+
+// function to handle delete tasks
+  const handleDelete = async (taskId) => {
+    try {
+        const response = await fetch(`http://localhost:5000/task/delete/${taskId}`, {
+            method: 'DELETE',
+        });
+
+        if (response.ok) {
+            setData(data.filter(task => task.id !== taskId));
+            console.log('deleted sussfully')
+        } else {
+            console.error('Failed to delete task');
+        }
+    } catch (error) {
+        console.error('Error deleting task:', error);
+    }
+};
+
+// Function to update a task
+const handleEdit = async (updatedTask) => {
+  try {
+      const response = await fetch(`http://localhost:5000/task/edit/${updatedTask._id}`, {
+          method: 'PUT', // Use 'PATCH' if you only want to update specific fields
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updatedTask),
+      });
+
+      if (response.ok) {
+          const updatedTaskFromServer = await response.json();
+          console.log('Updated successfully')
+          setData(data.map(task => (task.id === updatedTaskFromServer.id ? updatedTaskFromServer : task)));
+      } else {
+          console.error('Failed to update task');
+      }
+  } catch (error) {
+      console.error('Error updating task:', error);
+  }
+  closeModal();
+};
+
+
+// create Task
+const handleCreatePost = (createdTask)=>{
+  fetch(`http://localhost:5000/task/add`, {
+    method: 'POST', // Use 'PATCH' if you only want to update specific fields
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(createdTask),
+});
+}
+    
 
   return (
     <>
       <div className=" bg-stone-900 flex flex-col h-screen justify-center items-center">
         <h1 className=" font-serif mb-10 font-extrabold w-auto text-center text-white text-3xl ">
-          WELCOME TO TASK MANAGER
+          TO DO LIST
         </h1>
         <div
           className=" p-7 flex container flex-col gap-2 w-2/3 h-2/3 
@@ -54,21 +133,27 @@ function Home() {
             <div>Loaging..</div>
           ) : (
             data.map((item, index) => (
-              <div className="flex flex-col p-2 bg-lime-600 rounded-md">
+              <div key={index} className="flex flex-col p-2 bg-lime-600 rounded-md">
                 <div className="flex gap-3">
                 <div className="bg-violet-600 p-1 px-2 rounded-md text-sm font-bold text-white" >{item.title}</div>
-                <button className="hover:text-white" onClick={toggleCollapse}><FaAngleDown /></button>
-                <button className="hover:text-white"><FaRegEdit/></button>
-                <button className="hover:text-white">< MdDelete/></button>
+                <button className="hover:text-white" onClick={()=>toggleItem(index)}><FaAngleDown/></button>
+                <button className="hover:text-white" onClick={()=>{openModal(item)}}><FaRegEdit/></button>
+                <button className="hover:text-white" onClick={()=>{handleDelete(item._id)}} >< MdDelete/></button>
                 </div>
-                {!isCollapsed && (
-                  <div className="p-2 bg-white rounded-md text-violet-600 font-sans">{item.desc}</div>
-                )}
+                <div className="p-2 bg-white rounded-md text-violet-600 font-sans">{item.desc}</div>
+                {/* {openState[index] && (
+                )} */}
               </div>
             ))
           )}
         </div>
       </div>
+      <Modal
+                isOpen={isModalOpen}
+                task={selectedTask}
+                onClose={closeModal}
+                onSubmit={handleEdit}
+      />
     </>
   );
 }
