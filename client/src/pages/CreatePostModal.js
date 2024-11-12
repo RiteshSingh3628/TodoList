@@ -1,6 +1,7 @@
-import React from 'react'
+import React,{useState} from 'react'
+import { FaTimes } from 'react-icons/fa';
 
-function CreatePostModal({onPost}) {
+function CreatePostModal({onPost,onClose,isOpen}) {
     const [title, setTitle] = useState('');
     const [desc, setDescription] = useState('');
 
@@ -8,11 +9,13 @@ function CreatePostModal({onPost}) {
         e.preventDefault();
         onPost({title, desc});
     };
+
+    if(!isOpen) return null
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className="bg-white rounded-lg p-4 w-11/12 max-w-md">
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-semibold">Edit Task</h2>
+                    <h2 className="text-lg font-semibold">Create New Task</h2>
                     <button onClick={onClose} className="text-red-600 hover:text-red-800">
                         <FaTimes />
                     </button>

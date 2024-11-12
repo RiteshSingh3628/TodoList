@@ -3,8 +3,10 @@ import "../css/style.css";
 import { FaRegEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { FaAngleDown } from "react-icons/fa";
-import Modal from "./Modal";
+import { IoMdAdd } from "react-icons/io";
 // import Modal from './Modal'
+import Modal from "./Modal";
+import CreatePostModal from "./CreatePostModal";
 
 function Home() {
   // data
@@ -12,6 +14,8 @@ function Home() {
   const [openState,setOpenState] = useState([])
   const [selectedTask, setSelectedTask] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [addTask,setAddTask] = useState(null)
 
   useEffect(() => {
     fetchData();
@@ -53,6 +57,7 @@ function Home() {
   }
 
   const openModal = (task) =>{
+    
     setSelectedTask(task);
     setIsModalOpen(true);
   }
@@ -60,6 +65,10 @@ function Home() {
   const closeModal = () =>{
     setSelectedTask(null);
     setIsModalOpen(false);
+  }
+
+  const openCreateModal =() =>{
+    setIsCreateModalOpen(true);
   }
 
 
@@ -114,7 +123,21 @@ const handleCreatePost = (createdTask)=>{
         'Content-Type': 'application/json',
     },
     body: JSON.stringify(createdTask),
-});
+  })
+  .then(resp=>{
+    if(resp.ok){
+      console.log("Added task to database sussfully")
+      fetchData()
+    }
+    else {
+      console.error('Failed to update task');
+  }
+  })
+  .catch(err=>{
+    console.error('Error posting task:', err);
+  })
+
+  closeModal();
 }
     
 
@@ -147,12 +170,19 @@ const handleCreatePost = (createdTask)=>{
             ))
           )}
         </div>
+        <div className="rounded-full w-200px h-200px mt-16 bg-violet-600 text-white text-xl p-5 " onClick={openCreateModal}><IoMdAdd /></div>
       </div>
       <Modal
                 isOpen={isModalOpen}
                 task={selectedTask}
                 onClose={closeModal}
                 onSubmit={handleEdit}
+      />
+
+      <CreatePostModal 
+        isOpen = {isCreateModalOpen}
+        onClose = {closeModal}
+        onPost = {handleCreatePost}
       />
     </>
   );

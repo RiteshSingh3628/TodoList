@@ -7,10 +7,11 @@ function Modal({ isOpen, task, onClose, onSubmit }) {
 
     useEffect(() => {
         if (task) {
+            console.log("task",task)
             setTitle(task.title);
             setDescription(task.desc);
         }
-    }, []);
+    },[task]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
