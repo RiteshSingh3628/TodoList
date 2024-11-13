@@ -65,6 +65,7 @@ function Home() {
   const closeModal = () =>{
     setSelectedTask(null);
     setIsModalOpen(false);
+    setIsCreateModalOpen(false);
   }
 
   const openCreateModal =() =>{
@@ -143,14 +144,15 @@ const handleCreatePost = (createdTask)=>{
 
   return (
     <>
-      <div className=" bg-stone-900 flex flex-col h-screen justify-center items-center">
+      <div className=" bg-stone-900 flex flex-col h-screen justify-center items-center ">
         <h1 className=" font-serif mb-10 font-extrabold w-auto text-center text-white text-3xl ">
           TO DO LIST
         </h1>
         <div
           className=" p-7 flex container flex-col gap-2 w-2/3 h-2/3 
                 shadow-[5px_5px_rgba(0,_98,_90,_0.4),_10px_10px_rgba(0,_98,_90,_0.3),_15px_15px_rgba(0,_98,_90,_0.2),_20px_20px_rgba(0,_98,_90,_0.1),_25px_25px_rgba(0,_98,_90,_0.05)]
-        bg-violet-800 border-solid border-red-400"
+        bg-violet-800 border-solid border-red-400 overflow-y-scroll"
+      
         >
           {!data ? (
             <div>Loaging..</div>
@@ -178,7 +180,6 @@ const handleCreatePost = (createdTask)=>{
                 onClose={closeModal}
                 onSubmit={handleEdit}
       />
-
       <CreatePostModal 
         isOpen = {isCreateModalOpen}
         onClose = {closeModal}
